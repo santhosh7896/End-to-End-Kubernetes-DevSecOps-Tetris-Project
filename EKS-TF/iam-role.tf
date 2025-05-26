@@ -1,32 +1,32 @@
-data "aws_iam_policy_document" "s3_dynamodb_access" {
-  statement {
-    effect = "Allow"
-    actions = [
-      "s3:PutObject",
-      "s3:GetObject",
-      "s3:ListBucket"
-    ]
-    resources = [
-      "arn:aws:s3:::my-eks-devsecops-santhosh-2025",
-      "arn:aws:s3:::my-eks-devsecops-santhosh-2025/*"
-    ]
-  }
+# EKS Cluster IAM Role
+resource "aws_iam_role" "EKSClusterRole" {
+  name = "eksClusterRole"
 
-  statement {
-    effect = "Allow"
-    actions = [
-      "dynamodb:GetItem",
-      "dynamodb:PutItem",
-      "dynamodb:DeleteItem"
-    ]
-    resources = [
-      "arn:aws:dynamodb:ap-south-1:*:table/terraform-lock"
-    ]
-  }
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Action = "sts:AssumeRole",
+      Effect = "Allow",
+      Principal = {
+        Service = "eks.amazonaws.com"
+      }
+    }]
+  })
 }
 
-resource "aws_iam_policy" "eks_backend_policy" {
-  name   = "eks-backend-policy"
-  policy = data.aws_iam_policy_document.s3_dynamodb_access.json
+# EKS Node Group IAM Role
+resource "aws_iam_role" "NodeGroupRole" {
+  name = "eksNodeGroupRole"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Action = "sts:AssumeRole",
+      Effect = "Allow",
+      Principal = {
+        Service = "ec2.amazonaws.com"
+      }
+    }]
+  })
 }
 
